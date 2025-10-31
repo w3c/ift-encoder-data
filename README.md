@@ -11,20 +11,9 @@ of web pages that particular code point or pair is found on.
 Note: the code points do not need to occur next to each other in the source page to be counted.
 See the collection methodology section for more information.
 
-The actual data files are hosted on a CDN under `https://www.gstatic.com/fonts/unicode_frequency/v1/`.
-The list of data files that are present is given by [DATA_FILE_LIST](https://www.gstatic.com/fonts/unicode_frequency/v1/DATA_FILE_LIST). Some of the
-larger files are split into multiple shards, these will have a suffix of the form:
-`filename.riegeli-*-of-*`.
-
-The frequency data files listed in [DATA_FILE_LIST](https://www.gstatic.com/fonts/unicode_frequency/v1/DATA_FILE_LIST) are released under the
+These data files are licensed under the
 [W3C Software and Document License](https://www.w3.org/copyright/software-license-2023/).
-See [LICENSE](https://www.gstatic.com/fonts/unicode_frequency/v1/LICENSE)
-
-A bash script is provided in this repository to automate downloading of all the data files:
-
-```
-$ ./data/download-freq-data.sh
-```
+See [LICENSE.md](LICENSE.md)
 
 ## Schema
 
@@ -39,6 +28,9 @@ Frequency data is collected by both language and script. The file name will be e
 
 * `Language_<language code>.riegeli`, where `<language code>` is a bcp 47 tag, or
 * `Script_<script name>.csv`.
+
+Some of the larger files are split into multiple shards, these will have a suffix of the form:
+`filename.riegeli-*-of-*`.
 
 ## Tools
 
@@ -56,6 +48,11 @@ with these data files:
 These also provide a demonstration for how to use the Riegeli library to parse the files. Both of these are capable of
 handling sharded data files. When loading a file that is sharded append `@*` to the file name. For example
 `Language_ja.riegeli@*`.
+
+## Alternate Copy
+
+You can also find a copy of the data files in this repo hosted under `https://www.gstatic.com/fonts/unicode_frequency/v1/`.
+The list of data files that are present is given by [DATA_FILE_LIST](https://www.gstatic.com/fonts/unicode_frequency/v1/DATA_FILE_LIST).
 
 ## Collection Methodology
 
