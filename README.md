@@ -23,7 +23,7 @@ See [LICENSE](https://www.gstatic.com/fonts/unicode_frequency/v1/LICENSE)
 A bash script is provided in this repository to automate downloading of all the data files:
 
 ```
-$ ./data/download-data.sh
+$ ./data/download-freq-data.sh
 ```
 
 ## Schema
