@@ -17,20 +17,32 @@ filegroup(
 proto_library(
     name = "codepoint_count_proto",
     srcs = ["codepoint_count.proto"],
+    visibility = [
+        "//visibility:public",
+    ],
 )
 
 cc_proto_library(
     name = "codepoint_count_cc_proto",
+    visibility = [
+        "//visibility:public",
+    ],
     deps = [":codepoint_count_proto"],
 )
 
 proto_library(
     name = "metadata_proto",
     srcs = ["metadata.proto"],
+    visibility = [
+        "//visibility:public",
+    ],
 )
 
 cc_proto_library(
     name = "metadata_cc_proto",
+    visibility = [
+        "//visibility:public",
+    ],
     deps = [":metadata_proto"],
 )
 
