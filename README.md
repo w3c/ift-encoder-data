@@ -32,6 +32,18 @@ Frequency data is collected by both language and script. The file name will be e
 Some of the larger files are split into multiple shards, these will have a suffix of the form:
 `filename.riegeli-*-of-*`.
 
+## Metadata
+
+The `data/metadata.binpb` file contains a binary protobuf with metadata about the frequency data files. This includes:
+- A list of all available data files.
+- For each file, a list of code points covered by that file.
+
+The schema for this metadata is defined in `metadata.proto`.
+
+You can regenerate this metadata file using the `generate_metadata` utility:
+
+`bazel run -c opt //:generate_metadata -- --input_dir=$(pwd)/data --output_file=$(pwd)/data/metadata.binpb`
+
 ## Tools
 
 The [ift-encoder](https://github.com/w3c/ift-encoder) library provides tools and libraries for interacting
@@ -39,7 +51,7 @@ with these data files:
 
 * [freq_data_to_sorted_code points](https://github.com/w3c/ift-encoder/blob/main/util/freq_data_to_sorted_codepoints.cc):
   can pull out single code point frequencies and output them in a text format. Example usage:
-  
+
   `bazel run util:freq_data_to_sorted_codepoints -- "Language_ja.riegeli@*" --add_character > japanese-freqs.txt`
 
 * [ift-encoder util::LoadFrequenciesFromRiegeli](https://github.com/w3c/ift-encoder/blob/main/util/load_codepoints.h):
