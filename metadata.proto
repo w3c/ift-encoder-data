@@ -1,0 +1,12 @@
+edition = "2023";
+
+package ift_encoder_data;
+
+message FileMetadata {
+  string file_name = 1;
+  repeated uint32 codepoints = 2 [features.repeated_field_encoding = PACKED];
+}
+
+message DatasetMetadata {
+  repeated FileMetadata files = 1;
+}

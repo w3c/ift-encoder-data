@@ -2,3 +2,15 @@ module(
     name = "ift_encoder_data",
     repo_name = "ift_encoder_data",
 )
+
+bazel_dep(name = "rules_cc", version = "0.2.16")
+bazel_dep(name = "protobuf", version = "33.4")
+bazel_dep(name = "abseil-cpp", version = "20260107.1")
+bazel_dep(name = "riegeli", version = "0.0.0-20250822-9f2744d")
+
+bazel_dep(name = "hedron_compile_commands", dev_dependency = True)
+git_override(
+    module_name = "hedron_compile_commands",
+    remote = "https://github.com/hedronvision/bazel-compile-commands-extractor.git",
+    commit = "f5fbd4cee671d8d908f37c83abaf70fba5928fc7",
+)

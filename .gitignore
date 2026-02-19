@@ -2,4 +2,3 @@ MODULE.bazel.lock
 bazel-*
 *~
 .vscode
-
