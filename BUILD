@@ -14,6 +14,12 @@ filegroup(
     ],
 )
 
+exports_files(["data/metadata.binpb"] + glob([
+    "data/*.riegeli",
+    "data/*.riegeli-*",
+    "data/metadata.binpb",
+]))
+
 proto_library(
     name = "codepoint_count_proto",
     srcs = ["codepoint_count.proto"],
