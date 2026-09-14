@@ -1,6 +1,7 @@
 load("@protobuf//bazel:cc_proto_library.bzl", "cc_proto_library")
 load("@protobuf//bazel:proto_library.bzl", "proto_library")
 load("@rules_cc//cc:cc_binary.bzl", "cc_binary")
+load("@rules_cc//cc:cc_library.bzl", "cc_library")
 
 filegroup(
     name = "freq_data",
@@ -14,10 +15,24 @@ filegroup(
     ],
 )
 
-exports_files(["data/metadata.binpb"] + glob([
+# The same data as ":freq_data", but filtered down to only the individual code
+# point (unigram) counts. See generate_unigrams.cc.
+filegroup(
+    name = "unigram_freq_data",
+    srcs = glob([
+        "data/unigram/*.riegeli",
+    ]),
+    visibility = [
+        "//visibility:public",
+    ],
+)
+
+exports_files([
+    "data/metadata.binpb",
+] + glob([
     "data/*.riegeli",
     "data/*.riegeli-*",
-    "data/metadata.binpb",
+    "data/unigram/*.riegeli",
 ]))
 
 proto_library(
@@ -52,11 +67,29 @@ cc_proto_library(
     deps = [":metadata_proto"],
 )
 
+# Shared helpers for locating and reading the riegeli data files.
+cc_library(
+    name = "data_files",
+    srcs = ["data_files.cc"],
+    hdrs = ["data_files.h"],
+    deps = [
+        ":codepoint_count_cc_proto",
+        "@abseil-cpp//absl/functional:function_ref",
+        "@abseil-cpp//absl/log",
+        "@abseil-cpp//absl/status",
+        "@abseil-cpp//absl/status:statusor",
+        "@abseil-cpp//absl/strings",
+        "@riegeli//riegeli/bytes:fd_reader",
+        "@riegeli//riegeli/records:record_reader",
+    ],
+)
+
 cc_binary(
     name = "generate_metadata",
     srcs = ["generate_metadata.cc"],
     deps = [
         ":codepoint_count_cc_proto",
+        ":data_files",
         ":metadata_cc_proto",
         "@abseil-cpp//absl/flags:flag",
         "@abseil-cpp//absl/flags:parse",
@@ -64,8 +97,22 @@ cc_binary(
         "@abseil-cpp//absl/log:check",
         "@abseil-cpp//absl/status",
         "@abseil-cpp//absl/status:statusor",
+    ],
+)
+
+cc_binary(
+    name = "generate_unigrams",
+    srcs = ["generate_unigrams.cc"],
+    deps = [
+        ":codepoint_count_cc_proto",
+        ":data_files",
+        "@abseil-cpp//absl/flags:flag",
+        "@abseil-cpp//absl/flags:parse",
+        "@abseil-cpp//absl/log",
+        "@abseil-cpp//absl/status",
+        "@abseil-cpp//absl/status:statusor",
         "@abseil-cpp//absl/strings",
-        "@riegeli//riegeli/bytes:fd_reader",
-        "@riegeli//riegeli/records:record_reader",
+        "@riegeli//riegeli/bytes:fd_writer",
+        "@riegeli//riegeli/records:record_writer",
     ],
 )

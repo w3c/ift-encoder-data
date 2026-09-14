@@ -44,6 +44,18 @@ You can regenerate this metadata file using the `generate_metadata` utility:
 
 `bazel run -c opt //:generate_metadata -- --input_dir=$(pwd)/data --output_file=$(pwd)/data/metadata.binpb`
 
+## Unigram only data
+
+Consumers that only need individual code point frequencies (and not the code point pair frequencies)
+can use the filtered copy of the data set under `data/unigram/`. It contains the same set of files,
+with the same schema, but only the records giving the frequency of an individual code point (that is,
+records which list the same code point twice) are retained. As in the full data set, records are
+ordered by descending count. Files there are never sharded, since the unigram data is much smaller.
+
+You can regenerate this directory using the `generate_unigrams` utility:
+
+`bazel run -c opt //:generate_unigrams -- --input_dir=$(pwd)/data --output_dir=$(pwd)/data/unigram`
+
 ## Tools
 
 The [ift-encoder](https://github.com/w3c/ift-encoder) library provides tools and libraries for interacting
