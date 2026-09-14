@@ -1,8 +1,5 @@
-#include <algorithm>
-#include <filesystem>
 #include <fstream>
 #include <iostream>
-#include <map>
 #include <set>
 #include <string>
 #include <vector>
@@ -13,42 +10,32 @@
 #include "absl/log/log.h"
 #include "absl/status/status.h"
 #include "absl/status/statusor.h"
-#include "absl/strings/match.h"
-#include "absl/strings/str_cat.h"
-#include "absl/strings/string_view.h"
 #include "codepoint_count.pb.h"
+#include "data_files.h"
 #include "metadata.pb.h"
-#include "riegeli/bytes/fd_reader.h"
-#include "riegeli/records/record_reader.h"
 
 ABSL_FLAG(std::string, input_dir, "data", "Directory containing riegeli files.");
 ABSL_FLAG(std::string, output_file, "metadata.binpb",
           "Output path for the metadata proto file.");
 
 using ift_encoder_data::CodepointCount;
+using ift_encoder_data::DataFileMap;
 using ift_encoder_data::DatasetMetadata;
 using ift_encoder_data::FileMetadata;
+using ift_encoder_data::FindDataFiles;
+using ift_encoder_data::ForEachRecord;
+using ift_encoder_data::LogicalFileName;
 
 absl::StatusOr<std::set<uint32_t>> GetCodepointsFromFiles(
     const std::vector<std::string>& paths) {
   std::set<uint32_t> codepoints;
-  for (const std::string& path : paths) {
-    LOG(INFO) << "Processing " << path;
-    riegeli::RecordReader reader((riegeli::FdReader(path)));
-    if (!reader.ok()) {
-      return reader.status();
-    }
-
-    CodepointCount record;
-    while (reader.ReadRecord(record)) {
-      for (uint32_t cp : record.codepoints()) {
-        codepoints.insert(cp);
-      }
-    }
-
-    if (!reader.Close()) {
-      return reader.status();
-    }
+  absl::Status status =
+      ForEachRecord(paths, [&codepoints](const CodepointCount& record) {
+        codepoints.insert(record.codepoints().begin(),
+                          record.codepoints().end());
+      });
+  if (!status.ok()) {
+    return status;
   }
   return codepoints;
 }
@@ -57,30 +44,15 @@ absl::Status ProcessDataset() {
   std::string input_dir = absl::GetFlag(FLAGS_input_dir);
   std::string output_file = absl::GetFlag(FLAGS_output_file);
 
-  std::map<std::string, std::vector<std::string>> logical_to_physical;
-  for (const auto& entry : std::filesystem::directory_iterator(input_dir)) {
-    if (!entry.is_regular_file()) continue;
-
-    std::string filename = entry.path().filename().string();
-    std::string full_path = entry.path().string();
-
-    if (absl::EndsWith(filename, ".riegeli")) {
-      logical_to_physical[filename].push_back(full_path);
-    } else {
-      // Check for shards: name.riegeli-XXXXX-of-YYYYY
-      size_t riegeli_pos = filename.find(".riegeli-");
-      if (riegeli_pos != std::string::npos) {
-        std::string logical_name = filename.substr(0, riegeli_pos) + ".riegeli";
-        logical_to_physical[logical_name].push_back(full_path);
-      }
-    }
+  auto data_files = FindDataFiles(input_dir);
+  if (!data_files.ok()) {
+    return data_files.status();
   }
 
   absl::Status status;
 
   DatasetMetadata dataset_metadata;
-  for (auto& [logical_name, physical_paths] : logical_to_physical) {
-    std::sort(physical_paths.begin(), physical_paths.end());
+  for (const auto& [logical_name, physical_paths] : *data_files) {
     auto codepoints_or = GetCodepointsFromFiles(physical_paths);
     if (!codepoints_or.ok()) {
       LOG(ERROR) << "Failed to process " << logical_name << ": "
@@ -91,11 +63,8 @@ absl::Status ProcessDataset() {
 
     FileMetadata* file_metadata = dataset_metadata.add_files();
     // Use the @* notation for sharded files in the metadata as well, for consistency.
-    if (physical_paths.size() > 1) {
-      file_metadata->set_file_name(absl::StrCat(logical_name, "@*"));
-    } else {
-      file_metadata->set_file_name(logical_name);
-    }
+    file_metadata->set_file_name(
+        LogicalFileName(logical_name, physical_paths));
 
     for (uint32_t cp : *codepoints_or) {
       file_metadata->add_codepoints(cp);
