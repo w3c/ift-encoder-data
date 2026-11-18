@@ -1,6 +1,7 @@
 # Unicode code point frequency data
 
 Data Version: 1.1
+Collected: November 2026
 
 ## Overview
 
