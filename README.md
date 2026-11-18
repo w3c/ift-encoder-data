@@ -1,6 +1,7 @@
 # Unicode code point frequency data
 
-Data Version: 1.0
+Data Version: 1.1
+Collected: November 2026
 
 ## Overview
 
@@ -26,10 +27,11 @@ individually.
 
 Frequency data is collected by both language and script. The file name will be either:
 
-* `Language_<language code>.riegeli`, where `<language code>` is a bcp 47 tag, or
-* `Script_<script name>.csv`.
+* `Language_<language code>.riegeli`: frequency of all codepoints found on pages in `<language code>`.
+* `LanguageFiltered_<language code>.riegeli`: like `Language_<language code>.riegeli` but filtered to only codepoints in the script associated with `<language code>`.
+* `Script_<script name>.csv`: frequency of script codepoints across all pages that have a language written in this script.
 
-Some of the larger files are split into multiple shards, these will have a suffix of the form:
+Where `<language code>` is a bcp 47 tag. Some of the larger files are split into multiple shards, these will have a suffix of the form:
 `filename.riegeli-*-of-*`.
 
 ## Metadata
@@ -92,7 +94,9 @@ The list of data files that are present is given by [DATA_FILE_LIST](https://www
   * Here a code point pair just means that both code points are present somewhere on the page, it
     does not require they occur next to each other in the text.
   * Each unique pair is counted only once per page.
-* Within a script code points are filtered to those used in that script, using the definitions in
+  * `Language_` counts all codepoints, even those not in the script.
+  * `LanguageFiltered_` and `Script_` only count codepoints in the script.
+  * Filtering uses script definitions in
   [googlefonts/nam-files](https://github.com/googlefonts/nam-files/tree/main/Lib/gfsubsets/data)
 * In addition to the individual CJK scripts an overall CJK code point frequency count is collected by
   combining all of the Chinese, Japanese, and Korean counts. This can be found in `Script_CJK.riegeli`.
